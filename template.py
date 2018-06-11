@@ -181,6 +181,39 @@ def decodePacket(transmittedPacket, row, column):
 ##
 ###
 
+def Hamming(data):
+    # TODO: não pegar data dividir ela pra fazer os hammingzinhos
+    # Hamming (7,4)
+    i = 2 # começa no 2 pq os dois primeiros slots sempre serão hamming
+    j = 0
+    if len(data) == 4:
+        codedPacket = [0 for x in range(7)]
+        for x in range(2,7):
+            if (x % 2**i != 0):
+                codedPacket[x] = data[j]
+                j = j + 1
+        codedPacket[0] = data[0] ^ data[1] ^ data[3]
+        codedPacket[1] = data[0] ^ data[2] ^ data[3]
+        codedPacket[3] = data[1] ^ data[2] ^ data[3]
+
+    if len(data) == 8:
+        codedPacket = [0 for x in range(11)]
+        # TODO: FIX THE FOR
+        for x in range(2,7):
+            if (x % 2**i != 0):
+                codedPacket[x] = data[j]
+                j = j + 1
+        codedPacket[0] = data[0] ^ data[1] ^ data[3] ^ data[4] ^ data[6]
+        codedPacket[1] = data[0] ^ data[2] ^ data[3] ^ data[5] ^ data[6]
+        codedPacket[3] = data[1] ^ data[2] ^ data[3] ^ data[7]
+        codedPacket[8] = data[4] ^ data[5] ^ data[6] ^ data[7]
+    # TODO: outro numero pro hamming
+    if len(data) == 80008:
+        print("todo")
+    else: 
+        print("Hamming não suportado. Tamanhos suportados são 4, 8 e x.")
+    return codedPacket
+
 ##
 # Gera conteudo aleatorio no pacote passado como
 # parametro. Pacote eh representado por um vetor
