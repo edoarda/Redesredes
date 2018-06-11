@@ -38,7 +38,7 @@ def codePacket(originalPacket, row, column):
     ##
     # Itera por cada byte do pacote original.
     ##
-    for i in range(originalPacketLength / chunkSize):
+    for i in range(int(originalPacketLength / chunkSize)):
 
         ##
         # Bits do i-esimo byte sao dispostos na matriz.
@@ -46,7 +46,7 @@ def codePacket(originalPacket, row, column):
         ##
         for j in range(row):
             for k in range(column):
-                parityMatrix[j][k] = originalPacket[i * 8 + 4 * j + k]
+                parityMatrix[j][k] = originalPacket[i * chunkSize + column * j + k]
 
         ##
         # Replicacao dos bits de dados no pacote codificado.
@@ -59,7 +59,10 @@ def codePacket(originalPacket, row, column):
         # no pacote codificado: paridade das colunas.
         ##
         for j in range(column):
-            if (parityMatrix[0][j] + parityMatrix[1][j]) % 2 == 0:
+            sum = 0
+            for i in range(row):
+                sum += parityMatrix[i][j]
+            if sum % 2 == 0:
                 codedPacket[i * codedLen + chunkSize + j] = 0
             else:
                 codedPacket[i * codedLen + chunkSize + j] = 1
@@ -67,13 +70,15 @@ def codePacket(originalPacket, row, column):
         ##
         # Calculo dos bits de paridade, que sao colocados
         # no pacote codificado: paridade das linhas.
-        # TODO: ENTENDER A LÓGICA DO 12
         ##
-        for j in range(row):
-            if (parityMatrix[j][0] + parityMatrix[j][1] + parityMatrix[j][2] + parityMatrix[j][3]) % 2 == 0:
-                codedPacket[i * codedLen + 12 + j] = 0
+        for i in range(row):
+            sum = 0
+            for j in range(row):
+                sum += parityMatrix[i][j]
+            if sum % 2 == 0:
+                codedPacket[i * codedLen + chunkSize + column + j] = 0
             else:
-                codedPacket[i * codedLen + 12 + j] = 1
+                codedPacket[i * codedLen + chunkSize + column + j] = 1
 
     return codedPacket
 
@@ -124,7 +129,7 @@ def decodePacket(transmittedPacket, row, column):
         # TODO: O MALDITO DOZE
         ##
         for j in range(row):
-            parityRows[j] = transmittedPacket[i + 12 + j]
+            parityRows[j] = transmittedPacket[i + chunkSize + column + j]
 
         ##
         # Verificacao dos bits de paridade: colunas.
@@ -134,7 +139,10 @@ def decodePacket(transmittedPacket, row, column):
         ##
         errorInColumn = -1
         for j in range(column):
-            if (parityMatrix[0][j] + parityMatrix[1][j]) % 2 != parityColumns[j]:
+            sum=0
+            for i in range(row):
+                sum += parityMatrix[i][j]
+            if sum % 2 != parityColumns[j]:
                 errorInColumn = j
                 break
 
@@ -145,9 +153,11 @@ def decodePacket(transmittedPacket, row, column):
         # forma.
         ##
         errorInRow = -1
-        for j in range(row):
-
-            if (parityMatrix[j][0] + parityMatrix[j][1] + parityMatrix[j][2] + parityMatrix[j][3]) % 2 != parityRows[j]:
+        for i in range(row):
+            sum = 0
+            for j in range(column):
+                sum += parityMatrix[i][j]
+            if sum % 2 != parityRows[j]:
                 errorInRow = j
                 break
 
