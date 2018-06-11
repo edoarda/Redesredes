@@ -181,7 +181,7 @@ def decodePacket(transmittedPacket, row, column):
 ##
 ###
 
-def Hamming(data):
+def codeHamming(data):
     # TODO: não pegar data dividir ela pra fazer os hammingzinhos
     # Hamming (7,4)
     i = 2 # começa no 2 pq os dois primeiros slots sempre serão hamming
@@ -298,12 +298,16 @@ def help(selfName):
 
     sys.stderr.write("Simulador de metodos de FEC/codificacao.\n\n")
     sys.stderr.write("Modo de uso:\n\n")
-    sys.stderr.write("\t" + selfName + " <tam_pacote> <reps> <prob. erro>\n\n")
+    sys.stderr.write("\t" + selfName + " <tam_pacote> <reps> <prob. erro> <opcao> <arg1> <arg2>\n\n")
     sys.stderr.write("Onde:\n")
     sys.stderr.write("\t- <tam_pacote>: tamanho do pacote usado nas simulacoes (em bytes).\n")
     sys.stderr.write("\t- <reps>: numero de repeticoes da simulacao.\n")
     sys.stderr.write("\t- <prob. erro>: probabilidade de erro de bits (i.e., probabilidade\n")
     sys.stderr.write("de que um dado bit tenha seu valor alterado pelo canal.)\n\n")
+    sys.stderr.write("\t - <opcao>: 2d para paridade bidimensional ou hamming para hamming\n")
+    sys.stderr.write("\t - <arg1>: Paridade bidimensional: Número de LINHAS.\n")
+    sys.stderr.write("\t - <arg1>: Hamming: Número de Bits do pedaço (4, 8 ou 800008).\n")
+    sys.stderr.write("\t - <arg2>: Paridade bidimensional: Número de COLUNAS.\n")
 
     sys.exit(1)
 
@@ -327,14 +331,22 @@ totalInsertedErrorCount = 0
 ##
 # Leitura dos argumentos de linha de comando.
 ##
-if len(sys.argv) != 4:
+if len(sys.argv) != 6:
     help(sys.argv[0])
 
 packetLength = int(sys.argv[1])
 reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
-row = int(sys.argv[4])
-column = int(sys.argv[5])
+opcao = sys.argv[4].lower()
+if (opcao == "2d"):
+    row = int(sys.argv[5])
+    column = int(sys.argv[6])
+
+if (opcao == "hamming"):
+    bits = int(sys.argv[5])
+
+else:
+    help(sys.argv[0])
 
 if packetLength <= 0 or reps <= 0 or errorProb < 0 or errorProb > 1:
     help(sys.argv[0])
