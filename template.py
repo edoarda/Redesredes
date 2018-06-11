@@ -29,11 +29,13 @@ def codePacket(originalPacket, row, column):
     # Cada entrada na lista representa um bit do pacote (inteiro 0 ou 1).
     # Valor de retorno: pacote codificado no mesmo formato.
     ##
-    parityMatrix = [[0 for x in range(row)] for y in range(column)]
-    codedLen = ((row + 1) * (column + 1)) - 1
-    codedPacket = [0 for x in range(codedLen)]
+    parityMatrix = [[0 for x in range(column)] for y in range(row)]
     # vai precisar disso bastante, por isso tá pré-computado
     chunkSize = row * column
+    codedChunkSize = ((row + 1) * (column + 1)) - 1
+    codedLen = int(len(originalPacket) / chunkSize * codedChunkSize)
+    print("\n CodedLen " + str(codedLen))
+    codedPacket = [0 for x in range(codedLen)]
     originalPacketLength = len(originalPacket)
     ##
     # Itera por cada byte do pacote original.
@@ -46,13 +48,15 @@ def codePacket(originalPacket, row, column):
         ##
         for j in range(row):
             for k in range(column):
+                print("\n Original packet Size: " + str(originalPacketLength) + " Quero ir em: " + str(i * chunkSize + column * j + k))
+                print("\n j, k: " + str(j) + " " + str(k))
                 parityMatrix[j][k] = originalPacket[i * chunkSize + column * j + k]
 
         ##
         # Replicacao dos bits de dados no pacote codificado.
         ##
         for j in range(chunkSize):
-            codedPacket[i * codedLen + j] = originalPacket[i * chunkSize + j]
+            codedPacket[i * codedChunkSize + j] = originalPacket[i * chunkSize + j]
 
         ##
         # Calculo dos bits de paridade, que sao colocados
@@ -63,9 +67,11 @@ def codePacket(originalPacket, row, column):
             for i in range(row):
                 sum += parityMatrix[i][j]
             if sum % 2 == 0:
-                codedPacket[i * codedLen + chunkSize + j] = 0
+                print("\n Valor eh " + str(i * codedLen + chunkSize + j) + " Maxvalue coded eh " + str(len(codedPacket)))
+                codedPacket[i * codedChunkSize + chunkSize + j] = 0
             else:
-                codedPacket[i * codedLen + chunkSize + j] = 1
+                print("\n Valor eh" + str(i * codedLen + chunkSize + j) + " Maxvalue coded eh " + str(len(codedPacket)))
+                codedPacket[i * codedChunkSize + chunkSize + j] = 1
 
         ##
         # Calculo dos bits de paridade, que sao colocados
@@ -73,12 +79,12 @@ def codePacket(originalPacket, row, column):
         ##
         for i in range(row):
             sum = 0
-            for j in range(row):
+            for j in range(column):
                 sum += parityMatrix[i][j]
             if sum % 2 == 0:
-                codedPacket[i * codedLen + chunkSize + column + j] = 0
+                codedPacket[i * codedChunkSize + chunkSize + column + j] = 0
             else:
-                codedPacket[i * codedLen + chunkSize + column + j] = 1
+                codedPacket[i * codedChunkSize + chunkSize + column + j] = 1
 
     return codedPacket
 
@@ -129,7 +135,7 @@ def decodePacket(transmittedPacket, row, column):
         # TODO: O MALDITO DOZE
         ##
         for j in range(row):
-            parityRows[j] = transmittedPacket[i + chunkSize + column + j]
+            parityRows[j] = transmittedPacket[i + (chunkSize + column) + j]
 
         ##
         # Verificacao dos bits de paridade: colunas.
@@ -341,18 +347,20 @@ totalInsertedErrorCount = 0
 ##
 # Leitura dos argumentos de linha de comando.
 ##
-if len(sys.argv) != 6:
+print("\n" + str(len(sys.argv)) + "\n")
+if (len(sys.argv) < 6) or (len(sys.argv) > 7):
     help(sys.argv[0])
 
 packetLength = int(sys.argv[1])
 reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
 opcao = sys.argv[4].lower()
+print("\n" + opcao + "\n")
 if (opcao == "2d"):
     row = int(sys.argv[5])
     column = int(sys.argv[6])
 
-if (opcao == "hamming"):
+elif (opcao == "hamming"):
     bits = int(sys.argv[5])
 
 else:
