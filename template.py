@@ -48,8 +48,6 @@ def codePacket(originalPacket, row, column):
         ##
         for j in range(row):
             for k in range(column):
-                print("\n Original packet Size: " + str(originalPacketLength) + " Quero ir em: " + str(i * chunkSize + column * j + k))
-                print("\n j, k: " + str(j) + " " + str(k))
                 parityMatrix[j][k] = originalPacket[i * chunkSize + column * j + k]
 
         ##
@@ -64,23 +62,21 @@ def codePacket(originalPacket, row, column):
         ##
         for j in range(column):
             sum = 0
-            for i in range(row):
-                sum += parityMatrix[i][j]
+            for k in range(row):
+                sum += parityMatrix[k][j]
             if sum % 2 == 0:
-                print("\n Valor eh " + str(i * codedLen + chunkSize + j) + " Maxvalue coded eh " + str(len(codedPacket)))
                 codedPacket[i * codedChunkSize + chunkSize + j] = 0
             else:
-                print("\n Valor eh" + str(i * codedLen + chunkSize + j) + " Maxvalue coded eh " + str(len(codedPacket)))
                 codedPacket[i * codedChunkSize + chunkSize + j] = 1
 
         ##
         # Calculo dos bits de paridade, que sao colocados
         # no pacote codificado: paridade das linhas.
         ##
-        for i in range(row):
+        for j in range(row):
             sum = 0
-            for j in range(column):
-                sum += parityMatrix[i][j]
+            for k in range(column):
+                sum += parityMatrix[j][k]
             if sum % 2 == 0:
                 codedPacket[i * codedChunkSize + chunkSize + column + j] = 0
             else:
@@ -146,8 +142,8 @@ def decodePacket(transmittedPacket, row, column):
         errorInColumn = -1
         for j in range(column):
             sum=0
-            for i in range(row):
-                sum += parityMatrix[i][j]
+            for k in range(row):
+                sum += parityMatrix[k][j]
             if sum % 2 != parityColumns[j]:
                 errorInColumn = j
                 break
@@ -159,11 +155,11 @@ def decodePacket(transmittedPacket, row, column):
         # forma.
         ##
         errorInRow = -1
-        for i in range(row):
+        for k in range(row):
             sum = 0
             for j in range(column):
-                sum += parityMatrix[i][j]
-            if sum % 2 != parityRows[j]:
+                sum += parityMatrix[k][j]
+            if sum % 2 != parityRows[k]:
                 errorInRow = j
                 break
 
@@ -183,6 +179,88 @@ def decodePacket(transmittedPacket, row, column):
         for j in range(row):
             for k in range(column):
                 decodedPacket[chunkSize * n + column * j + k] = parityMatrix[j][k]
+
+        ##
+        # Incrementar numero de bytes na saida.
+        ##
+        n = n + 1
+
+    return decodedPacket
+
+def decodePacketOriginal(transmittedPacket):
+
+    parityMatrix = [[0 for x in range(4)] for y in range(2)]
+    parityColumns = [0 for x in range(4)]
+    parityRows = [0 for x in range(2)]
+    decodedPacket = [0 for x in range(len(transmittedPacket))]
+
+    n = 0 # Contador de bytes no pacote decodificado.
+
+    ##
+    # Itera por cada sequencia de 14 bits (8 de dados + 6 de paridade).
+    ##
+    for i in range(0, len(transmittedPacket), 14):
+
+        ##
+        # Bits do i-esimo conjunto sao dispostos na matriz.
+        ##
+        for j in range(2):
+            for k in range(4):
+                parityMatrix[j][k] = transmittedPacket[i + 4 * j + k]
+
+        ##
+        # Bits de paridade das colunas.
+        ##
+        for j in range(4):
+            parityColumns[j] = transmittedPacket[i + 8 + j]
+
+        ##
+        # Bits de paridade das linhas.
+        ##
+        for j in range(2):
+            parityRows[j] = transmittedPacket[i + 12 + j]
+
+        ##
+        # Verificacao dos bits de paridade: colunas.
+        # Note que paramos no primeiro erro, ja que se houver mais
+        # erros, o metodo eh incapaz de corrigi-los de qualquer
+        # forma.
+        ##
+        errorInColumn = -1
+        for j in range(4):
+            if (parityMatrix[0][j] + parityMatrix[1][j]) % 2 != parityColumns[j]:
+                errorInColumn = j
+                break
+
+        ##
+        # Verificacao dos bits de paridade: linhas.
+        # Note que paramos no primeiro erro, ja que se houver mais
+        # erros, o metodo eh incapaz de corrigi-los de qualquer
+        # forma.
+        ##
+        errorInRow = -1
+        for j in range(2):
+
+            if (parityMatrix[j][0] + parityMatrix[j][1] + parityMatrix[j][2] + parityMatrix[j][3]) % 2 != parityRows[j]:
+                errorInRow = j
+                break
+
+        ##
+        # Se algum erro foi encontrado, corrigir.
+        ##
+        if errorInRow > -1 and errorInColumn > -1:
+
+            if parityMatrix[errorInRow][errorInColumn] == 1:
+                parityMatrix[errorInRow][errorInColumn] = 0
+            else:
+                parityMatrix[errorInRow][errorInColumn] = 1
+
+        ##
+        # Colocar bits (possivelmente corrigidos) na saida.
+        ##
+        for j in range(2):
+            for k in range(4):
+                decodedPacket[8 * n + 4 * j + k] = parityMatrix[j][k]
 
         ##
         # Incrementar numero de bytes na saida.
@@ -381,6 +459,8 @@ random.seed()
 
 originalPacket = generateRandomPacket(packetLength)
 codedPacket = codePacket(originalPacket, row, column)
+print(str(originalPacket))
+print(str(decodePacketOriginal(codedPacket)))
 
 ##
 # Loop de repeticoes da simulacao.

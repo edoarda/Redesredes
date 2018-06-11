@@ -303,6 +303,8 @@ random.seed()
 
 originalPacket = generateRandomPacket(packetLength)
 codedPacket = codePacket(originalPacket)
+print(originalPacket)
+print(str(decodePacket(codedPacket)))
 
 ##
 # Loop de repeticoes da simulacao.
