@@ -160,7 +160,7 @@ def decodePacket(transmittedPacket, row, column):
             for j in range(column):
                 sum += parityMatrix[k][j]
             if sum % 2 != parityRows[k]:
-                errorInRow = j
+                errorInRow = k
                 break
 
         ##
@@ -459,8 +459,6 @@ random.seed()
 
 originalPacket = generateRandomPacket(packetLength)
 codedPacket = codePacket(originalPacket, row, column)
-print(str(originalPacket))
-print(str(decodePacketOriginal(codedPacket)))
 
 ##
 # Loop de repeticoes da simulacao.
