@@ -29,7 +29,7 @@ def codePacket(originalPacket, row, column):
     # Valor de retorno: pacote codificado no mesmo formato.
     ##
     parityMatrix = [[0 for x in range(column)] for y in range(row)]
-    # vai precisar disso bastante, por isso tá pré-computado
+    # vai precisar disso bastante, por isso tá pre-computado
     chunkSize = row * column
     codedChunkSize = ((row + 1) * (column + 1)) - 1
     codedLen = int(len(originalPacket) / chunkSize * codedChunkSize)
@@ -189,52 +189,6 @@ def decodePacket(transmittedPacket, row, column):
 ##
 ###
 
-def old_codeHamming(data, ham):
-    # TODO: não pegar data dividir ela pra fazer os hammingzinhos
-    
-    i = 2 # começa no 2 pq os dois primeiros slots sempre serão sempre bits de verificacao
-    j = 0 # para iterar no data
-    dataSize = len(data)
-    codedPacket = [0 for x in range(dataSize - 1)]
-    codedPacketChunk = [0 for x in range(ham)]
-
-    for x in range(2, (dataSize - 1)):
-        if (x % 2**i != 0):
-            codedPacket[x] = data[j]
-            j = j + 1
-        else:
-            i = i + 1
-    #
-    ###
-    # Fazendo os bits de paridade
-    ###
-    #
-    # Hamming (7,4)
-    if dataSize == 4:
-        codedPacket[0] = codedPacket[0] ^ data[0] ^ data[1] ^ data[3]
-        codedPacket[1] = codedPacket[1] ^ data[0] ^ data[2] ^ data[3]
-        codedPacket[3] = codedPacket[3] ^ data[1] ^ data[2] ^ data[3]
-
-    # Hamming (12, 8)
-    elif dataSize == 8:
-        codedPacket[0] = data[0] ^ data[1] ^ data[3] ^ data[4] ^ data[6]
-        codedPacket[1] = data[0] ^ data[2] ^ data[3] ^ data[5] ^ data[6]
-        codedPacket[3] = data[1] ^ data[2] ^ data[3] ^ data[7]
-        codedPacket[7] = data[4] ^ data[5] ^ data[6] ^ data[7]
-
-    # Hamming (21,16)
-    elif dataSize == 16:
-        codedPacket[0] = codedPacket[0] ^ data[0] ^ data[1] ^ data[3] ^ data[4] ^ data[6] ^ data[8] ^ data[10] ^ data[11] ^ data[13] ^ data[15]
-        codedPacket[1] = codedPacket[1] ^ data[0] ^ data[2] ^ data[3] ^ data[5] ^ data[6] ^ data[10] ^ data[12] ^ data[13]
-        codedPacket[3] = codedPacket[3] ^ data[1] ^ data[2] ^ data[3] ^ data[7] ^ data[8] ^ data[9] ^ data[10] ^ data[14] ^ data[15]
-        codedPacket[7] = codedPacket[7] ^ data[4] ^ data[5] ^ data[6] ^ data[7] ^ data[8] ^ data[9] ^ data[10]
-        codedPacket[15] = codedPacket[15] ^ data[11] ^ data[12] ^ data[13] ^ data[14] ^ data[15]
-        
-    else:
-        help(sys.argv[0])
-
-    return codedPacket
-
 def codeHamming(data, tamTotal, tamDados):
     #TESTADO EM (7,4), (12,8), (21,16)
     #tamDados = 4
@@ -268,45 +222,7 @@ def codeHamming(data, tamTotal, tamDados):
         respFinal.extend(respParcial)
     return respFinal
 
-def decodeHamming(data, tamTotal):
-    # TESTADO EM (7,4), (12,8), (21,16)
-    #tamDados = 4 !!! PROVOU-SE DESNECESSARIO NO DECODE
-    #tamTotal = 7
-    respFinal = []
-    erroEm=0
-    for i in range(int(len(data)/tamTotal)):
-        vetorParcial = [0 for x in range(tamTotal)]
-
-        #preenche o vetor parcial
-        for j in range(tamTotal):
-            vetorParcial[j]= data[i*tamTotal+j]
-
-
-        #agora verifica os bits de paridade
-        for j in range(1,tamTotal+1):
-            if (j != 0) and ((j & (j - 1)) == 0):  # ve se eh potencia de 2
-                sum =0
-                #ve j, pula j, ve j, pula j...
-                for k in range(j-1,tamTotal,j*2):
-                    for l in range(j):
-                        if k+l<tamTotal:
-                            sum+=vetorParcial[k+l]
-                # se a soma dos bits que ele deveria ver, com ele mesmo nao for divisivel por 2, entao esse bit de paridade acusa erro
-                if sum%2!=0:
-                    erroEm+=j
-
-        #agora tenta corrigir onde acusou o erro
-        if erroEm != 0:
-            if vetorParcial[erroEm-1]==0:
-                vetorParcial[erroEm-1]=1
-            else:
-                vetorParcial[erroEm-1]=0
-
-        #adiciona a lista de resposta parcial no final da lista de resposta final
-        respFinal.extend(vetorParcial)
-    return respFinal
-
-def decodeHammingV2(data, tamTotal, tamDados):
+def decodeHamming(data, tamTotal, tamDados):
     # TESTADO EM (7,4), (12,8), (21,16)
     #tamDados = 4 !!! PROVOU-SE DESNECESSARIO NO DECODE
     #tamTotal = 7
@@ -505,16 +421,12 @@ random.seed()
 ##
 
 originalPacket = generateRandomPacket(packetLength)
-print(str(originalPacket))
-print("\n\nHAMMING\n\n")
 
 if opcao=="2d":
     codedPacket = codePacket(originalPacket, row, column)
 elif opcao == "hamming":
     codedPacket = codeHamming(originalPacket, tamTotal, tamDados)
 
-print(str(codedPacket))
-print("\n\nHAMMING\n\n")
 ##
 # Loop de repeticoes da simulacao.
 ##
@@ -532,18 +444,12 @@ for i in range(reps):
     if opcao=="2d":
         decodedPacket = decodePacket(transmittedPacket, row, column)
     elif opcao == "hamming":
-        decodedPacket = decodeHammingV2(codedPacket,tamTotal, tamDados)
+        decodedPacket = decodeHamming(codedPacket,tamTotal, tamDados)
 
     ##
     # Contar erros.
     ##
     bitErrorCount = countErrors(originalPacket, decodedPacket)
-
-    print(str(transmittedPacket))
-    print("\n\nHAMMING\n\n")
-    print(str(decodedPacket))
-    teste = (decodedPacket == originalPacket)
-    print(teste)
 
     if bitErrorCount > 0:
 
