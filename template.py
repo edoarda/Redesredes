@@ -238,9 +238,10 @@ def old_codeHamming(data, ham):
 def old_decodeHamming(codedPacket, ham):
     return decodedPacket
 
-def codeHamming74(data):
-    tamDados = 4
-    tamTotal = 7
+def codeHamming(data, tamTotal, tamDados):
+    #TESTADO EM (7,4), (12,8), (21,16)
+    #tamDados = 4
+    #tamTotal = 7
     respFinal = []
     for i in range(int(len(data)/tamDados)):
         respParcial = [0 for x in range(tamTotal)]
@@ -261,7 +262,8 @@ def codeHamming74(data):
                 #ve j, pula j, ve j, pula j...
                 for k in range(j-1,tamTotal,j*2):
                     for l in range(j):
-                        sum+=respParcial[k+l]
+                        if k+l<tamTotal:
+                            sum+=respParcial[k+l]
                 if sum%2!=0:
                     respParcial[j-1]=1
 
@@ -269,9 +271,10 @@ def codeHamming74(data):
         respFinal.extend(respParcial)
     return respFinal
 
-def decodeHamming74(data):
-    tamDados = 4
-    tamTotal = 7
+def decodeHamming(data, tamTotal):
+    # TESTADO EM (7,4), (12,8), (21,16)
+    #tamDados = 4 !!! PROVOU-SE DESNECESSARIO NO DECODE
+    #tamTotal = 7
     respFinal = []
     erroEm=0
     for i in range(int(len(data)/tamTotal)):
@@ -289,7 +292,8 @@ def decodeHamming74(data):
                 #ve j, pula j, ve j, pula j...
                 for k in range(j-1,tamTotal,j*2):
                     for l in range(j):
-                        sum+=vetorParcial[k+l]
+                        if k+l<tamTotal:
+                            sum+=vetorParcial[k+l]
                 # se a soma dos bits que ele deveria ver, com ele mesmo nao for divisivel por 2, entao esse bit de paridade acusa erro
                 if sum%2!=0:
                     erroEm+=j
@@ -395,10 +399,11 @@ def help(selfName):
     sys.stderr.write("\t- <reps>: numero de repeticoes da simulacao.\n")
     sys.stderr.write("\t- <prob. erro>: probabilidade de erro de bits (i.e., probabilidade\n")
     sys.stderr.write("de que um dado bit tenha seu valor alterado pelo canal.)\n\n")
-    sys.stderr.write("\t - <opcao>: 2d para paridade bidimensional ou hamming para hamming\n")
+    sys.stderr.write("\t - <opcao>: \"2d\" para paridade bidimensional ou \"hamming\" para hamming\n")
     sys.stderr.write("\t - <arg1>: Paridade bidimensional: Número de LINHAS.\n")
-    sys.stderr.write("\t - <arg1>: Hamming: Número de Bits do pedaço ((7,4), (12,8) ou (21,16)). Digite o ultimo número da tupla.\n")
+    sys.stderr.write("\t - <arg1>: Hamming: Número de Bits totais do pedaço (Testado com:(7,4), (12,8) ou (21,16)). Digite o primeiro número da tupla.\n")
     sys.stderr.write("\t - <arg2>: Paridade bidimensional: Número de COLUNAS.\n")
+    sys.stderr.write("\t - <arg2>: Hamming: Número de Bits de dados do pedaço (Testado com:(7,4), (12,8) ou (21,16)). Digite o ultimo número da tupla.\n")
 
     sys.exit(1)
 
@@ -434,7 +439,8 @@ if (opcao == "2d"):
     column = int(sys.argv[6])
 
 elif (opcao == "hamming"):
-    bits = int(sys.argv[5])
+    tamTotal = int(sys.argv[5])
+    tamDados = int(sys.argv[6])
 
 else:
     help(sys.argv[0])
@@ -453,16 +459,11 @@ random.seed()
 ##
 
 originalPacket = generateRandomPacket(packetLength)
-print(str(originalPacket))
-print("\n\nHAMMING\n\n")
-# print(str(numpy.array_split(originalPacket, 3)))
-#codedPacket = codePacket(originalPacket, row, column)
-codedPacket = codeHamming74(originalPacket)
-print(str(codedPacket))
-print("\n\nDECODE HAMMING\n\n")
-print(str(decodeHamming74(codedPacket)))
 
-print(str(codedPacket==decodeHamming74(codedPacket)))
+if(opcao=="2b"):
+    codedPacket = codePacket(originalPacket, row, column)
+elif (opcao == "hamming"):
+    codedPacket = codeHamming(originalPacket,tamTotal,tamDados)
 
 ##
 # Loop de repeticoes da simulacao.
@@ -478,9 +479,12 @@ for i in range(reps):
     ##
     # Gerar versao decodificada do pacote.
     ##
-    decodedPacket = decodePacket(transmittedPacket, row, column)
+    if(opcao=="2b"):
+        decodedPacket = decodePacket(transmittedPacket, row, column)
+    elif (opcao == "hamming"):
+        decodedPacket = decodeHamming(codedPacket,tamTotal)
 
-    ##
+        ##
     # Contar erros.
     ##
     bitErrorCount = countErrors(originalPacket, decodedPacket)
