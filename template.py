@@ -392,7 +392,7 @@ totalInsertedErrorCount = 0
 ##
 # Leitura dos argumentos de linha de comando.
 ##
-if (len(sys.argv) == 7):
+if (len(sys.argv) == 6):
     help(sys.argv[0])
 
 packetLength = int(sys.argv[1])
