@@ -1,7 +1,6 @@
 import random
 import math
 import sys
-import numpy
 
 #########
 # Implementacao um esquema sem qualquer metodo de codificao.
@@ -282,8 +281,8 @@ def decodeHamming74(data):
         vetorParcial = [0 for x in range(tamTotal)]
 
         #preenche o vetor parcial
-        for j in range(0,tamTotal):
-            vetorParcial[j]= data[i*tamDados]
+        for j in range(tamTotal):
+            vetorParcial[j]= data[i*tamTotal+j]
 
 
         #agora verifica os bits de paridade
@@ -463,7 +462,7 @@ print("\n\nHAMMING\n\n")
 #codedPacket = codePacket(originalPacket, row, column)
 codedPacket = codeHamming74(originalPacket)
 print(str(codedPacket))
-print("\n\nHAMMING\n\n")
+print("\n\nDECODE HAMMING\n\n")
 print(str(decodeHamming74(codedPacket)))
 
 print(str(codedPacket==decodeHamming74(codedPacket)))
