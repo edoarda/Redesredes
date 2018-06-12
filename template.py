@@ -457,12 +457,16 @@ random.seed()
 ##
 
 originalPacket = generateRandomPacket(packetLength)
-#print(str(originalPacket))
-#print("\n\nHAMMING\n\n")
+print(str(originalPacket))
+print("\n\nHAMMING\n\n")
 # print(str(numpy.array_split(originalPacket, 3)))
-codedPacket = codePacket(originalPacket, row, column)
-#codedPacket = codeHamming74(originalPacket)
-#print(str(codedPacket))
+#codedPacket = codePacket(originalPacket, row, column)
+codedPacket = codeHamming74(originalPacket)
+print(str(codedPacket))
+print("\n\nHAMMING\n\n")
+print(str(decodeHamming74(codedPacket)))
+
+print(str(codedPacket==decodeHamming74(codedPacket)))
 
 ##
 # Loop de repeticoes da simulacao.
