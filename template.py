@@ -35,7 +35,6 @@ def codePacket(originalPacket, row, column):
     chunkSize = row * column
     codedChunkSize = ((row + 1) * (column + 1)) - 1
     codedLen = int(len(originalPacket) / chunkSize * codedChunkSize)
-    print("\n CodedLen " + str(codedLen))
     codedPacket = [0 for x in range(codedLen)]
     originalPacketLength = len(originalPacket)
     ##
@@ -118,7 +117,8 @@ def decodePacket(transmittedPacket, row, column):
         ##
         for j in range(row):
             for k in range(column):
-                parityMatrix[j][k] = transmittedPacket[i + column * j + k]
+                temp = transmittedPacket[i + column * j + k]
+                parityMatrix[j][k] = temp
 
         ##
         # Bits de paridade das colunas.
@@ -187,88 +187,6 @@ def decodePacket(transmittedPacket, row, column):
 
     return decodedPacket
 
-def decodePacketOriginal(transmittedPacket):
-
-    parityMatrix = [[0 for x in range(4)] for y in range(2)]
-    parityColumns = [0 for x in range(4)]
-    parityRows = [0 for x in range(2)]
-    decodedPacket = [0 for x in range(len(transmittedPacket))]
-
-    n = 0 # Contador de bytes no pacote decodificado.
-
-    ##
-    # Itera por cada sequencia de 14 bits (8 de dados + 6 de paridade).
-    ##
-    for i in range(0, len(transmittedPacket), 14):
-
-        ##
-        # Bits do i-esimo conjunto sao dispostos na matriz.
-        ##
-        for j in range(2):
-            for k in range(4):
-                parityMatrix[j][k] = transmittedPacket[i + 4 * j + k]
-
-        ##
-        # Bits de paridade das colunas.
-        ##
-        for j in range(4):
-            parityColumns[j] = transmittedPacket[i + 8 + j]
-
-        ##
-        # Bits de paridade das linhas.
-        ##
-        for j in range(2):
-            parityRows[j] = transmittedPacket[i + 12 + j]
-
-        ##
-        # Verificacao dos bits de paridade: colunas.
-        # Note que paramos no primeiro erro, ja que se houver mais
-        # erros, o metodo eh incapaz de corrigi-los de qualquer
-        # forma.
-        ##
-        errorInColumn = -1
-        for j in range(4):
-            if (parityMatrix[0][j] + parityMatrix[1][j]) % 2 != parityColumns[j]:
-                errorInColumn = j
-                break
-
-        ##
-        # Verificacao dos bits de paridade: linhas.
-        # Note que paramos no primeiro erro, ja que se houver mais
-        # erros, o metodo eh incapaz de corrigi-los de qualquer
-        # forma.
-        ##
-        errorInRow = -1
-        for j in range(2):
-
-            if (parityMatrix[j][0] + parityMatrix[j][1] + parityMatrix[j][2] + parityMatrix[j][3]) % 2 != parityRows[j]:
-                errorInRow = j
-                break
-
-        ##
-        # Se algum erro foi encontrado, corrigir.
-        ##
-        if errorInRow > -1 and errorInColumn > -1:
-
-            if parityMatrix[errorInRow][errorInColumn] == 1:
-                parityMatrix[errorInRow][errorInColumn] = 0
-            else:
-                parityMatrix[errorInRow][errorInColumn] = 1
-
-        ##
-        # Colocar bits (possivelmente corrigidos) na saida.
-        ##
-        for j in range(2):
-            for k in range(4):
-                decodedPacket[8 * n + 4 * j + k] = parityMatrix[j][k]
-
-        ##
-        # Incrementar numero de bytes na saida.
-        ##
-        n = n + 1
-
-    return decodedPacket
-
 ###
 ##
 # Outras funcoes.
@@ -323,6 +241,39 @@ def codeHamming(data, ham):
 
 def decodeHamming(codedPacket, ham):
     return decodedPacket
+
+def codeHamming74(data):
+    tamDados = 4
+    tamTotal = 7
+    respFinal = []
+    for i in range(int(len(data)/tamDados)):
+        respParcial = [0 for x in range(tamTotal)]
+        c=0
+
+        #preenche o vetor da resposta parcial com os dados do sub array, mas ainda nao mexe nos bits de paridade
+        for j in range(1,tamTotal+1):
+            if (j != 0) and ((j & (j-1)) == 0):#ve se eh potencia de 2
+                continue
+            else:
+                respParcial[j-1]= data[i*tamDados+c]
+                c+=1
+
+        #agora mexe só nos bits de paridade
+        for j in range(1,tamTotal+1):
+            if (j != 0) and ((j & (j - 1)) == 0):  # ve se eh potencia de 2
+                sum =0
+                #ve j, pula j, ve j, pula j...
+                for k in range(j-1,tamTotal,j*2):
+                    for l in range(j):
+                        sum+=respParcial[k+l]
+                if sum%2!=0:
+                    respParcial[j-1]=1
+
+        #adiciona a lista de resposta parcial no final da lista de resposta final
+        respFinal.extend(respParcial)
+    return respFinal
+
+
 ##
 # Gera conteudo aleatorio no pacote passado como
 # parametro. Pacote eh representado por um vetor
@@ -440,7 +391,6 @@ totalInsertedErrorCount = 0
 ##
 # Leitura dos argumentos de linha de comando.
 ##
-print("\n" + str(len(sys.argv)) + "\n")
 if (len(sys.argv) < 6) or (len(sys.argv) > 7):
     help(sys.argv[0])
 
@@ -448,7 +398,6 @@ packetLength = int(sys.argv[1])
 reps = int(sys.argv[2])
 errorProb = float(sys.argv[3])
 opcao = sys.argv[4].lower()
-print("\n" + opcao + "\n")
 if (opcao == "2d"):
     row = int(sys.argv[5])
     column = int(sys.argv[6])
@@ -474,8 +423,11 @@ random.seed()
 
 originalPacket = generateRandomPacket(packetLength)
 print(str(originalPacket))
-print(str(numpy.array_split(originalPacket, 3)))
-codedPacket = codePacket(originalPacket, row, column)
+print("\n\nHAMMING\n\n")
+# print(str(numpy.array_split(originalPacket, 3)))
+# codedPacket = codePacket(originalPacket, row, column)
+codedPacket = codeHamming74(originalPacket)
+print(str(codedPacket))
 
 ##
 # Loop de repeticoes da simulacao.
