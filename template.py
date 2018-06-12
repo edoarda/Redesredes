@@ -226,6 +226,38 @@ def codeHamming(data):
         print("Hamming não suportado. Tamanhos suportados são 4, 8 e x.")
     return codedPacket
 
+def codeHamming74(data):
+    tamDados = 4
+    tamTotal = 7
+    respFinal = None
+    for i in range(len(data)/tamDados):
+        respParcial = [0 for x in range(tamTotal)]
+        c=0
+
+        #preenche o vetor da resposta parcial com os dados do sub array, mas ainda nao mexe nos bits de paridade
+        for j in range(1,tamTotal+1):
+            if (j != 0) and ((j & (j-1)) == 0):#ve se eh potencia de 2
+                continue
+            else:
+                respParcial[j-1]= data[i*tamDados+c]
+                c+=1
+
+        #agora mexe só nos bits de paridade
+        for j in range(1,tamTotal+1):
+            if (j != 0) and ((j & (j - 1)) == 0):  # ve se eh potencia de 2
+                sum =0
+                #ve j, pula j, ve j, pula j...
+                for k in range(j-1,tamTotal,j*2):
+                    for l in range(j):
+                        sum+=respParcial[k+l]
+                if sum%2!=0:
+                    respParcial[j-1]=1
+
+        #adiciona a lista de resposta parcial no final da lista de resposta final
+        respFinal.append(respParcial)
+    return respFinal
+
+
 ##
 # Gera conteudo aleatorio no pacote passado como
 # parametro. Pacote eh representado por um vetor
