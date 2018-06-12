@@ -44,7 +44,6 @@ def codePacket(originalPacket, row, column):
 
         ##
         # Bits do i-esimo byte sao dispostos na matriz.
-        # TODO: ENTENDER ESSA LOGICA DO ORIGINAL PACKET LÁ
         ##
         for j in range(row):
             for k in range(column):
@@ -275,39 +274,54 @@ def decodePacketOriginal(transmittedPacket):
 ##
 ###
 
-def codeHamming(data):
+def codeHamming(data, ham):
     # TODO: não pegar data dividir ela pra fazer os hammingzinhos
-    # Hamming (7,4)
-    i = 2 # começa no 2 pq os dois primeiros slots sempre serão hamming
-    j = 0
-    if len(data) == 4:
-        codedPacket = [0 for x in range(7)]
-        for x in range(2,7):
-            if (x % 2**i != 0):
-                codedPacket[x] = data[j]
-                j = j + 1
-        codedPacket[0] = data[0] ^ data[1] ^ data[3]
-        codedPacket[1] = data[0] ^ data[2] ^ data[3]
-        codedPacket[3] = data[1] ^ data[2] ^ data[3]
+    
+    i = 2 # começa no 2 pq os dois primeiros slots sempre serão sempre bits de verificacao
+    j = 0 # para iterar no data
+    dataSize = len(data)
+    codedPacket = [0 for x in range(dataSize - 1)]
+    codedPacketChunk = [0 for x in range(ham)]
 
-    if len(data) == 8:
-        codedPacket = [0 for x in range(11)]
-        # TODO: FIX THE FOR
-        for x in range(2,7):
-            if (x % 2**i != 0):
-                codedPacket[x] = data[j]
-                j = j + 1
+    for x in range(2, (dataSize - 1)):
+        if (x % 2**i != 0):
+            codedPacket[x] = data[j]
+            j = j + 1
+        else:
+            i = i + 1
+    #
+    ###
+    # Fazendo os bits de paridade
+    ###
+    #
+    # Hamming (7,4)
+    if dataSize == 4:
+        codedPacket[0] = codedPacket[0] ^ data[0] ^ data[1] ^ data[3]
+        codedPacket[1] = codedPacket[1] ^ data[0] ^ data[2] ^ data[3]
+        codedPacket[3] = codedPacket[3] ^ data[1] ^ data[2] ^ data[3]
+
+    # Hamming (12, 8)
+    elif dataSize == 8:
         codedPacket[0] = data[0] ^ data[1] ^ data[3] ^ data[4] ^ data[6]
         codedPacket[1] = data[0] ^ data[2] ^ data[3] ^ data[5] ^ data[6]
         codedPacket[3] = data[1] ^ data[2] ^ data[3] ^ data[7]
-        codedPacket[8] = data[4] ^ data[5] ^ data[6] ^ data[7]
-    # TODO: outro numero pro hamming
-    if len(data) == 80008:
-        print("todo")
-    else: 
-        print("Hamming não suportado. Tamanhos suportados são 4, 8 e x.")
+        codedPacket[7] = data[4] ^ data[5] ^ data[6] ^ data[7]
+
+    # Hamming (21,16)
+    elif dataSize == 16:
+        codedPacket[0] = codedPacket[0] ^ data[0] ^ data[1] ^ data[3] ^ data[4] ^ data[6] ^ data[8] ^ data[10] ^ data[11] ^ data[13] ^ data[15]
+        codedPacket[1] = codedPacket[1] ^ data[0] ^ data[2] ^ data[3] ^ data[5] ^ data[6] ^ data[10] ^ data[12] ^ data[13]
+        codedPacket[3] = codedPacket[3] ^ data[1] ^ data[2] ^ data[3] ^ data[7] ^ data[8] ^ data[9] ^ data[10] ^ data[14] ^ data[15]
+        codedPacket[7] = codedPacket[7] ^ data[4] ^ data[5] ^ data[6] ^ data[7] ^ data[8] ^ data[9] ^ data[10]
+        codedPacket[15] = codedPacket[15] ^ data[11] ^ data[12] ^ data[13] ^ data[14] ^ data[15]
+        
+    else:
+        help(sys.argv[0])
+
     return codedPacket
 
+def decodeHamming(codedPacket, ham):
+    return decodedPacket
 ##
 # Gera conteudo aleatorio no pacote passado como
 # parametro. Pacote eh representado por um vetor
@@ -400,7 +414,7 @@ def help(selfName):
     sys.stderr.write("de que um dado bit tenha seu valor alterado pelo canal.)\n\n")
     sys.stderr.write("\t - <opcao>: 2d para paridade bidimensional ou hamming para hamming\n")
     sys.stderr.write("\t - <arg1>: Paridade bidimensional: Número de LINHAS.\n")
-    sys.stderr.write("\t - <arg1>: Hamming: Número de Bits do pedaço (4, 8 ou 800008).\n")
+    sys.stderr.write("\t - <arg1>: Hamming: Número de Bits do pedaço ((7,4), (12,8) ou (21,16)). Digite o ultimo número da tupla.\n")
     sys.stderr.write("\t - <arg2>: Paridade bidimensional: Número de COLUNAS.\n")
 
     sys.exit(1)
