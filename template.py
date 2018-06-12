@@ -21,7 +21,6 @@ import sys
 ##
 def codePacket(originalPacket, row, column):
     ##
-    # TODO: entender a logica, os todos embaixo
     # Argumentos:
     #  - originalPacket: pacote original a ser codificado na forma de uma lista.
     #  - row: qtd de linhas na matriz de paridade
@@ -89,7 +88,6 @@ def codePacket(originalPacket, row, column):
 def decodePacket(transmittedPacket, row, column):
 
     ##
-    # TODO: completar!
     # Argumentos:
     #  - transmittedPacket: pacote apos simulacao da transmissao, potencialmente
     # contendo erros. Cada entrada na lista representa um bit do pacote
@@ -127,7 +125,6 @@ def decodePacket(transmittedPacket, row, column):
 
         ##
         # Bits de paridade das linhas.
-        # TODO: O MALDITO DOZE
         ##
         for j in range(row):
             parityRows[j] = transmittedPacket[i + (chunkSize + column) + j]
@@ -192,7 +189,7 @@ def decodePacket(transmittedPacket, row, column):
 ##
 ###
 
-def codeHamming(data, ham):
+def old_codeHamming(data, ham):
     # TODO: não pegar data dividir ela pra fazer os hammingzinhos
     
     i = 2 # começa no 2 pq os dois primeiros slots sempre serão sempre bits de verificacao
@@ -238,7 +235,7 @@ def codeHamming(data, ham):
 
     return codedPacket
 
-def decodeHamming(codedPacket, ham):
+def old_decodeHamming(codedPacket, ham):
     return decodedPacket
 
 def codeHamming74(data):
