@@ -273,6 +273,41 @@ def codeHamming74(data):
         respFinal.extend(respParcial)
     return respFinal
 
+def decodeHamming74(data):
+    tamDados = 4
+    tamTotal = 7
+    respFinal = []
+    erroEm=0
+    for i in range(int(len(data)/tamTotal)):
+        vetorParcial = [0 for x in range(tamTotal)]
+
+        #preenche o vetor parcial
+        for j in range(0,tamTotal):
+            vetorParcial[j]= data[i*tamDados]
+
+
+        #agora verifica os bits de paridade
+        for j in range(1,tamTotal+1):
+            if (j != 0) and ((j & (j - 1)) == 0):  # ve se eh potencia de 2
+                sum =0
+                #ve j, pula j, ve j, pula j...
+                for k in range(j-1,tamTotal,j*2):
+                    for l in range(j):
+                        sum+=vetorParcial[k+l]
+                # se a soma dos bits que ele deveria ver, com ele mesmo nao for divisivel por 2, entao esse bit de paridade acusa erro
+                if sum%2!=0:
+                    erroEm+=j
+
+        #agora tenta corrigir onde acusou o erro
+        if erroEm != 0:
+            if vetorParcial[erroEm-1]==0:
+                vetorParcial[erroEm-1]=1
+            else:
+                vetorParcial[erroEm-1]=0
+
+        #adiciona a lista de resposta parcial no final da lista de resposta final
+        respFinal.extend(vetorParcial)
+    return respFinal
 
 ##
 # Gera conteudo aleatorio no pacote passado como
