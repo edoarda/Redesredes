@@ -460,9 +460,9 @@ random.seed()
 
 originalPacket = generateRandomPacket(packetLength)
 
-if(opcao=="2b"):
+if opcao=="2d":
     codedPacket = codePacket(originalPacket, row, column)
-elif (opcao == "hamming"):
+elif opcao == "hamming":
     codedPacket = codeHamming(originalPacket,tamTotal,tamDados)
 
 ##
@@ -479,9 +479,9 @@ for i in range(reps):
     ##
     # Gerar versao decodificada do pacote.
     ##
-    if(opcao=="2b"):
+    if opcao=="2d":
         decodedPacket = decodePacket(transmittedPacket, row, column)
-    elif (opcao == "hamming"):
+    elif opcao == "hamming":
         decodedPacket = decodeHamming(codedPacket,tamTotal)
 
         ##
