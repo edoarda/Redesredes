@@ -422,12 +422,12 @@ random.seed()
 ##
 
 originalPacket = generateRandomPacket(packetLength)
-print(str(originalPacket))
-print("\n\nHAMMING\n\n")
+#print(str(originalPacket))
+#print("\n\nHAMMING\n\n")
 # print(str(numpy.array_split(originalPacket, 3)))
-# codedPacket = codePacket(originalPacket, row, column)
-codedPacket = codeHamming74(originalPacket)
-print(str(codedPacket))
+codedPacket = codePacket(originalPacket, row, column)
+#codedPacket = codeHamming74(originalPacket)
+#print(str(codedPacket))
 
 ##
 # Loop de repeticoes da simulacao.
@@ -456,7 +456,8 @@ for i in range(reps):
         totalPacketErrorCount = totalPacketErrorCount + 1
 
 print ('Numero de transmissoes simuladas: {0:d}\n'.format(reps))
-print ('Numero de bits transmitidos: {0:d}'.format(reps * packetLength * 8))
+print ('Numero de bits de dados: {0:d}'.format(reps * packetLength * 8))
+print ('Numero de bits transmitidos: {0:d}'.format(reps * len(codedPacket)))
 print ('Numero de bits errados inseridos: {0:d}\n'.format(totalInsertedErrorCount))
 print ('Taxa de erro de bits (antes da decodificacao): {0:.2f}%'.format(float(totalInsertedErrorCount) / float(reps * len(codedPacket)) * 100.0))
 print ('Numero de bits corrompidos apos decodificacao: {0:d}'.format(totalBitErrorCount))
