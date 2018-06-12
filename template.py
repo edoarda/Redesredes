@@ -269,6 +269,9 @@ def decodeHamming(data, tamTotal, tamDados):
 
         #adiciona a lista de resposta parcial no final da lista de resposta final
         respFinal.extend(dadosOriginaisParcial)
+
+        while(len(respFinal) <= len(data)):
+            respFinal.extend([0])
     return respFinal
 
 ##
