@@ -1,6 +1,7 @@
 import random
 import math
 import sys
+import numpy
 
 #########
 # Implementacao um esquema sem qualquer metodo de codificao.
@@ -472,6 +473,8 @@ random.seed()
 ##
 
 originalPacket = generateRandomPacket(packetLength)
+print(str(originalPacket))
+print(str(numpy.array_split(originalPacket, 3)))
 codedPacket = codePacket(originalPacket, row, column)
 
 ##
