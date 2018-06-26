@@ -227,8 +227,8 @@ def decodeHamming(data, tamTotal, tamDados):
     #tamDados = 4 !!! PROVOU-SE DESNECESSARIO NO DECODE
     #tamTotal = 7
     respFinal = []
-    erroEm=0
     for i in range(int(len(data)/tamTotal)):
+        erroEm=0
         vetorParcial = [0 for x in range(tamTotal)]
 
         #preenche o vetor parcial
@@ -447,7 +447,7 @@ for i in range(reps):
     if opcao=="2d":
         decodedPacket = decodePacket(transmittedPacket, row, column)
     elif opcao == "hamming":
-        decodedPacket = decodeHamming(codedPacket,tamTotal, tamDados)
+        decodedPacket = decodeHamming(transmittedPacket,tamTotal, tamDados)
 
     ##
     # Contar erros.
